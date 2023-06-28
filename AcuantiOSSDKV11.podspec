@@ -19,7 +19,7 @@ Pod::Spec.new do |s|
                   LICENSE
     }
     s.author             = { "Acuant Inc" => "smaltsev@acuant.com" }
-    s.source       = { :git => "https://github.com/Acuant/iOSSDKV11.git", :tag =>    "#{s.version}" }
+    s.source       = { :git => "https://github.com/wirebarley/iOSSDKV11", :tag =>    "#{s.version}" }
 
     s.subspec 'AcuantCommon' do |acuantCommon|
         acuantCommon.ios.deployment_target = '11.0'
