@@ -29,12 +29,12 @@
                 defaultBracketMarginHeight: CGFloat = 0.6,
                 textForState: @escaping (DocumentCameraState) -> String = { state in
                     switch state {
-                    case .align: return "ALIGN"
-                    case .moveCloser: return "MOVE CLOSER"
-                    case .tooClose: return "TOO CLOSE"
-                    case .steady: return "HOLD STEADY"
-                    case .hold: return "HOLD"
-                    case .capture: return "CAPTURING"
+                    case .align: return NSLocalizedString("acuant_camera_align", comment: "")
+                    case .moveCloser: return NSLocalizedString("acuant_camera_move_closer", comment: "")
+                    case .tooClose: return NSLocalizedString("acuant_camera_outside_view", comment: "")
+                    case .steady: return NSLocalizedString("acuant_camera_hold_steady", comment: "")
+                    case .hold: return "HOLD" // 기존에 사용처가없음
+                    case .capture: return NSLocalizedString("acuant_camera_capturing", comment: "")
                     @unknown default: return ""
                     }
                 },
@@ -49,8 +49,8 @@
                     @unknown default: return UIColor.black.cgColor
                     }
                 },
-                textForManualCapture: String = "ALIGN & TAP",
-                textForCameraPaused: String = "CAMERA PAUSED",
+                textForManualCapture: String = NSLocalizedString("acuant_camera_manual_capture", comment: ""),
+                textForCameraPaused: String = NSLocalizedString("acuant_camera_paused", comment: ""),
                 backButtonText: String = "BACK") {
         self.countdownDigits = countdownDigits
         self.timeInMillisecondsPerCountdownDigit = timeInSecondsPerCountdownDigit
