@@ -31,7 +31,7 @@ import UIKit
          bracketLengthInVertical: Int = 50,
          defaultBracketMarginWidth: CGFloat = 0.5,
          defaultBracketMarginHeight: CGFloat = 0.6,
-         textForCameraPaused: String = "CAMERA PAUSED",
+         textForCameraPaused: String = NSLocalizedString("acuant_camera_paused", comment: ""),
          backButtonText: String = "BACK") {
         self.hideNavigationBar = hideNavigationBar
         self.showBackButton = showBackButton

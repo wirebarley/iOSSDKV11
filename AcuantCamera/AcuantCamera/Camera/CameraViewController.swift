@@ -226,15 +226,12 @@ import AVFoundation
     }
 
     private func addNavigationBackButton() {
-        backButton = UIButton(frame: CGRect(x: 0, y: UIScreen.main.heightOfSafeArea() * 0.065, width: 90, height: 40))
+        backButton = UIButton(frame: CGRect(x: 10, y: self.view.safeAreaInsets.top, width: 44, height: 50)) // 와바 네비게이션 뷰랑 동일하게 맞춤
 
-        var attribs: [NSAttributedString.Key: Any?] = [:]
-        attribs[NSAttributedString.Key.font] = UIFont.systemFont(ofSize: 18)
-        attribs[NSAttributedString.Key.foregroundColor] = UIColor.white
-        attribs[NSAttributedString.Key.baselineOffset] = 4
+        let backButtonImage: UIImage? = .init(named: "ic_back_nor")?.withRenderingMode(.alwaysTemplate)
 
-        let str = NSMutableAttributedString.init(string: options.backButtonText, attributes: attribs as [NSAttributedString.Key: Any])
-        backButton.setAttributedTitle(str, for: .normal)
+        backButton.setImage(backButtonImage, for: .normal)
+        backButton.tintColor = .white
         backButton.addTarget(self, action: #selector(backTapped(_:)), for: .touchUpInside)
         backButton.isOpaque = true
         backButton.imageView?.contentMode = .scaleAspectFit
