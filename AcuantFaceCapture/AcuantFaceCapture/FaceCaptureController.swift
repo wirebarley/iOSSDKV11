@@ -12,6 +12,14 @@ import AVFoundation
 import AcuantImagePreparation
 
 public class FaceCaptureController: UIViewController {
+    fileprivate enum UI {
+        static let extraHeight: CGFloat = 40
+        static let maxLines: Int = 3
+        
+        enum Font {
+            static let defaultSize: CGFloat = 25
+        }
+    }
 
     public var callback: ((FaceCaptureResult?) -> Void)?
     public var options: FaceCameraOptions?
@@ -22,7 +30,7 @@ public class FaceCaptureController: UIViewController {
     private var faceOval: CAShapeLayer?
     private var topOverlayLayer: CAShapeLayer!
     private var imageLayer: ImagePlaceholderLayer?
-    private var messageLayer: CATextLayer!
+    private var messageLayer: VerticallyTextLayer!
     private var cornerlayer: FaceCameraCornerOverlayView!
     private var alertView: AlertView?
 
@@ -135,16 +143,16 @@ public class FaceCaptureController: UIViewController {
                 switch faceResult.state {
                 case AcuantFaceState.NONE:
                     self?.cancelCountdown()
-                    self?.addMessage(messageKey: "acuant_face_camera_initial", color: self?.options?.fontColorDefault, fontSize: 25)
+                    self?.addMessage(messageKey: "acuant_face_camera_initial", color: self?.options?.fontColorDefault)
                 case AcuantFaceState.FACE_TOO_CLOSE:
                     self?.cancelCountdown()
-                    self?.addMessage(messageKey: "acuant_face_camera_face_too_close", color: self?.options?.fontColorError, fontSize: 25)
+                    self?.addMessage(messageKey: "acuant_face_camera_face_too_close", color: self?.options?.fontColorError)
                 case AcuantFaceState.FACE_TOO_FAR:
                     self?.cancelCountdown()
                     self?.addMessage(messageKey: "acuant_face_camera_face_too_far", color: self?.options?.fontColorError)
                 case AcuantFaceState.FACE_HAS_ANGLE:
                     self?.cancelCountdown()
-                    self?.addMessage(messageKey: "acuant_face_camera_face_has_angle", color: self?.options?.fontColorError, fontSize: 25)
+                    self?.addMessage(messageKey: "acuant_face_camera_face_has_angle", color: self?.options?.fontColorError)
                 case AcuantFaceState.FACE_NOT_IN_FRAME:
                     self?.cancelCountdown()
                     self?.addMessage(messageKey: "acuant_face_camera_face_not_in_frame", color: self?.options?.fontColorError)
@@ -166,10 +174,12 @@ public class FaceCaptureController: UIViewController {
         overlayView = createSemiTransparentOverlay()
         view.addSubview(overlayView!)
 
-        topOverlayLayer = createTopOverlay()
-        videoPreviewLayer.addSublayer(topOverlayLayer)
-
+        /// topOverlayLayer의 높이를 계산할 때 messageLayer의 폰트를 참고하기 때문에, messageLayer를 먼저 생성.
         messageLayer = createMessageLayer()
+        topOverlayLayer = createTopOverlay()
+        
+        /// layer에 쌓을 때는 topOverlayLayer 위에 messageLayer가 쌓이기 때문에, topOverlayLayer를 먼저 add.
+        videoPreviewLayer.addSublayer(topOverlayLayer)
         videoPreviewLayer.addSublayer(messageLayer)
 
         cornerlayer = FaceCameraCornerOverlayView()
@@ -319,7 +329,10 @@ public class FaceCaptureController: UIViewController {
     }
 
     func createRectanglePath() -> UIBezierPath {
-        let height = view.bounds.height * 0.17
+        let topPadding = getSafeArea()
+        let textHeight = CGFloat(UI.maxLines) * messageLayer.fontSize
+        let height = textHeight + UI.extraHeight + topPadding
+        
         return UIBezierPath(rect: CGRect(x: 0, y: 0, width: Int(view.bounds.width), height: Int(height)))
     }
 
@@ -329,7 +342,7 @@ public class FaceCaptureController: UIViewController {
         return view
     }
 
-    func addMessage(messageKey: String, color: CGColor? = UIColor.red.cgColor, fontSize: CGFloat = 30){
+    func addMessage(messageKey: String, color: CGColor? = UIColor.red.cgColor, fontSize: CGFloat = UI.Font.defaultSize){
         messageLayer.fontSize = fontSize
         messageLayer.foregroundColor = color
         messageLayer.string = NSLocalizedString(messageKey, comment: "")
@@ -378,17 +391,20 @@ public class FaceCaptureController: UIViewController {
         self.cornerlayer.setColor(color: color)
     }
     
-    func createMessageLayer() -> CATextLayer {
-        messageLayer = CATextLayer()
+    private func createMessageLayer(fontSize: CGFloat = UI.Font.defaultSize) -> VerticallyTextLayer {
+        messageLayer = VerticallyTextLayer()
+        messageLayer.fontSize = fontSize
         messageLayer.frame = getMessageRect()
         messageLayer.contentsScale = UIScreen.main.scale
         messageLayer.alignmentMode = CATextLayerAlignmentMode.center
         messageLayer.foregroundColor = UIColor.white.cgColor
+        messageLayer.isWrapped = true
+        messageLayer.truncationMode = .middle
         return messageLayer
     }
     
     func getSafeArea() -> CGFloat {
-        if let window = UIApplication.shared.keyWindow{
+        if let window = UIApplication.shared.keyWindow {
             return window.safeAreaInsets.top
         } else {
             return 0
@@ -398,9 +414,43 @@ public class FaceCaptureController: UIViewController {
     func getMessageRect() -> CGRect {
         let width = view.safeAreaLayoutGuide.layoutFrame.size.width
         let topPadding = getSafeArea()
-        let height = view.bounds.height * 0.17
-        
-        let padding = topPadding == 0 ? (height - topPadding)/4 : topPadding
+        let textHeight = CGFloat(UI.maxLines) * messageLayer.fontSize
+        let height = textHeight + UI.extraHeight
+        let padding = topPadding == 0 ? -CGFloat((UI.maxLines - 1) * 3) : topPadding - (UI.extraHeight / 2)
         return CGRect(x: 0, y: padding, width: width, height: height)
+    }
+    
+    /// 높이를 텍스트 라인에 맞게 조절하기 위한 CustomTextLayer
+    fileprivate class VerticallyTextLayer : CATextLayer {
+        func calculateMaxLines() -> Int {
+            let maxSize = CGSize(width: frame.size.width, height: .greatestFiniteMagnitude)
+            let font = UIFont(descriptor: self.font!.fontDescriptor, size: self.fontSize)
+            let charSize = font.lineHeight
+            let text = (self.string ?? "") as! NSString
+            /// boundingRect를 이용하여 width를 제한한 상태에서 height 구하기
+            let textSize = text.boundingRect(with: maxSize, options: .usesLineFragmentOrigin, attributes: [NSAttributedString.Key.font: font], context: nil)
+            /// 총 Height / 한 줄 Height = Line 수
+            let linesRoundedUp = Int(ceil(textSize.height / charSize))
+            /// MaxLine보다 큰 경우, MaxLine으로 제한 후 ... 처리
+            if linesRoundedUp > UI.maxLines {
+                return UI.maxLines
+            }
+            
+            return linesRoundedUp
+        }
+
+        override func draw(in context: CGContext) {
+            let height = self.bounds.size.height
+            let fontSize = self.fontSize
+            let lines = CGFloat(calculateMaxLines())
+            let textSize = lines * fontSize
+            /// 위 여백을 위해 남은 공간을 2로 나누어 적용
+            let yDiff = (height - textSize) / 2
+            
+            context.saveGState()
+            context.translateBy(x: 0, y: yDiff)
+            super.draw(in: context)
+            context.restoreGState()
+        }
     }
 }
