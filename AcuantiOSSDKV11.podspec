@@ -3,7 +3,7 @@ Pod::Spec.new do |s|
     s.swift_versions = ['5.5.2']
     s.ios.deployment_target = '11.0'
     s.name         = "AcuantiOSSDKV11"
-    s.version      = "11.6.2"
+    s.version      = "11.6.4"
     s.summary      = "Acuant's latest SDK with most advanced image capture technology and optimized user workflow  "
     s.description  = "Acuant's latest SDK with most advanced image capture technology and optimized user workflow.
 
@@ -15,7 +15,7 @@ Pod::Spec.new do |s|
     s.license      = {
           :type => 'commercial',
           :text => <<-LICENSE
-                  Copyright 2023 Acuant, Inc. All Rights Reserved.
+                  Copyright 2024 Acuant, Inc. All Rights Reserved.
                   LICENSE
     }
     s.author             = { "Acuant Inc" => "smaltsev@acuant.com" }
@@ -66,15 +66,6 @@ Pod::Spec.new do |s|
         acuantHG.dependency "#{s.name}/AcuantCommon"
     end
     
-    s.subspec 'AcuantIPLiveness' do |acuantIP|
-        acuantIP.ios.deployment_target = '11.0'
-
-        acuantIP.ios.vendored_frameworks = "EmbeddedFrameworks/AcuantIPLiveness.xcframework"
-        
-        acuantIP.dependency "#{s.name}/AcuantCommon"
-        acuantIP.dependency 'iProov', '~> 9.2.0'
-    end
-    
     s.subspec 'AcuantEchipReader' do |acuantEchip|
         acuantEchip.ios.deployment_target = '11.0'
 
@@ -92,7 +83,7 @@ Pod::Spec.new do |s|
             "AcuantFaceCapture/AcuantFaceCapture/View/*.{h,swift}",
             "AcuantFaceCapture/AcuantFaceCapture/Models/*.{h,swift}",
             "AcuantFaceCapture/AcuantFaceCapture/Extension/*.{h,swift}"
-
+        acuantFaceCapture.resource_bundles = { 'AcuantFaceCaptureAssets' => [ 'AcuantFaceCapture/AcuantFaceCapture/*.xcprivacy'] }
         acuantFaceCapture.dependency "#{s.name}/AcuantCommon"
         acuantFaceCapture.dependency "#{s.name}/AcuantImagePreparation"
     end
@@ -129,7 +120,7 @@ Pod::Spec.new do |s|
                 "AcuantCamera/AcuantCamera/Extension/*.{h,swift}",
                 "AcuantCamera/AcuantCamera/Constant/*.{h,swift}",
                 "AcuantCamera/AcuantCamera/Camera/*.{h,swift}"
-            common.resource_bundles = { 'AcuantCameraAssets' => [ 'AcuantCamera/AcuantCamera/*.xcassets'] }
+            common.resource_bundles = { 'AcuantCameraAssets' => [ 'AcuantCamera/AcuantCamera/*.xcassets', 'AcuantCamera/AcuantCamera/*.xcprivacy'] }
         end
 
         acuantCamera.source_files = "AcuantCamera/AcuantCamera/*.{h,swift}"

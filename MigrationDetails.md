@@ -1,5 +1,11 @@
 # Migration Details
 
+## v11.6.4
+
+### Important information about upgrading from iOS SDK version 11.6.2 to version 11.6.4+
+
+The IPLiveness module has been removed.
+
 ----------
 
 ## v11.6.2
